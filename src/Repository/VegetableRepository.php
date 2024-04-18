@@ -4,6 +4,9 @@ namespace App\Repository;
 
 use App\Entity\Vegetable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,6 +22,13 @@ class VegetableRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Vegetable::class);
+    }
+
+    public function queryForAll() : QueryBuilder {
+        $qb = $this->createQueryBuilder('vegetable')
+        ->orderBy('vegetable.title', 'ASC');
+
+        return $qb;
     }
 
     //    /**
