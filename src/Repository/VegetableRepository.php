@@ -2,12 +2,16 @@
 
 namespace App\Repository;
 
+use App\Entity\Category;
 use App\Entity\Vegetable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @extends ServiceEntityRepository<Vegetable>
@@ -29,6 +33,29 @@ class VegetableRepository extends ServiceEntityRepository
         ->orderBy('vegetable.title', 'ASC');
 
         return $qb;
+    }
+
+    public function countCategory(Category $category): int
+    {
+        $qb = $this->createQueryBuilder('vegetable')
+        ->select('COUNT(DISTINCT(vegetable.id))')
+        ->andWhere('vegetable.category = :category')
+        ->setParameter(':category', $category)
+        ->getQuery()
+        ->getSingleScalarResult();
+
+        return $qb;
+    }
+
+    public function canDelete(Category $category): bool
+    {
+        try {
+            $result = $this->countCategory($category);
+            
+            return $result == 0;
+        } catch (NoResultException|NonUniqueResultException) {
+            return false;
+        }
     }
 
     //    /**

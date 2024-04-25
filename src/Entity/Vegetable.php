@@ -31,6 +31,9 @@ class Vegetable
     #[ORM\Column(length: 255)]
     private ?string $harvestMonth = null;
 
+    #[ORM\ManyToOne(inversedBy: 'vegetables')]
+    private ?Category $category = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -94,5 +97,15 @@ class Vegetable
     public function setHarvestMonth(string $harvestMonth): void
     {
         $this->harvestMonth = $harvestMonth;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): void
+    {
+        $this->category = $category;
     }
 }

@@ -9,22 +9,22 @@ use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[Route('api/vegetable')]
 class VegetableController extends AbstractController
 {
 
-    public function __construct(private SerializerInterface $serializer, private VegetableRepository $vegetableRepository)
+    public function __construct(private SerializerInterface $serializer, private VegetableRepository $vegetableRepository, private EntityManagerInterface $entityManager)
     {
     }
 
 
-    #[Route('/api/vegetables', name:'api_index_vegetables')]
-    public function index(Request $request, VegetableRepository $vegetableRepository, PaginatorInterface $paginator): Response
+    #[Route('/', name:'api_vegetables')]
+    public function index(Request $request, PaginatorInterface $paginator): Response
     {
         $pagination = $paginator->paginate(
             $this->vegetableRepository->queryForAll(),
@@ -38,32 +38,31 @@ class VegetableController extends AbstractController
     }
 
 
-    #[Route('/api/createVegetable', methods:'POST')]
-    public function create(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/post', methods:'POST')]
+    public function create(Request $request): Response
     {
         $vegetable = new Vegetable();
         $form = $this->createForm(VegetableType::class, $vegetable);
         $this->processForm($request, $form);
 
-
         if($form->isSubmitted() && $form->isValid()) {
-        $entityManager->persist($vegetable);
-        $entityManager->flush();
+            $this->entityManager->persist($vegetable);
+            $this->entityManager->flush();
 
-        $json = $this->serializeVegetable($vegetable);
-        $response = new Response($json, 201);
-        $response->headers->set('Location', $this->generateUrl('api_index_vegetables'));
+            $json = $this->serializeVegetable($vegetable);
+            $response = new Response($json, 201);
+            $response->headers->set('Location', $this->generateUrl('api_vegetables'));
 
-        return $response;
+            return $response;
         }
 
         return new Response($form->getErrors()); 
     }
 
-    #[Route('/api/putVegetable/{id}', requirements:['id' => '[1-9]\d*'], methods:'GET|PUT', name:'vegetable_edit')]
-    public function putVegetable(Request $request, Vegetable $vegetable, EntityManagerInterface $entityManager): Response
+    #[Route('/put/{id}', name:'vegetable_edit', requirements:['id' => '[1-9]\d*'], methods:'PUT')]
+    public function putVegetable(Request $request, Vegetable $vegetable): Response
     {
-        $form = $this->createForm(VegetableType::class, $vegetable, 
+        $form = $this->createForm(VegetableType::class, $vegetable,
         [
             'method' => 'PUT',
             'action' => $this->generateUrl('vegetable_edit', ['id' => $vegetable->getId()]),
@@ -71,8 +70,9 @@ class VegetableController extends AbstractController
         $this->processForm($request, $form);
 
         if($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($vegetable);
-            $entityManager->flush();
+            $this->entityManager->persist($vegetable);
+            $this->entityManager->flush();
+
             $json = $this->serializeVegetable($vegetable);
             $response = new Response($json, 200);
             return $response;
@@ -81,26 +81,13 @@ class VegetableController extends AbstractController
         return new Response($form->getErrors());
     }
 
-    #[Route('/api/deleteVegetable/{id}', methods:'GET|DELETE', name:'delete_vegetable')]
-    public function deleteVegetable(Request $request, Vegetable $vegetable, EntityManagerInterface $entityManager): Response
+    #[Route('/delete/{id}', requirements: ["id" => '[1-9]\d*'], methods:'DELETE')]
+    public function deleteVegetable(Vegetable $vegetable): Response
     {
-        $form = $this->createForm(FormType::class, $vegetable,
-    [
-        'method' => 'DELETE',
-        'action' => $this->generateUrl('delete_vegetable', ['id' => $vegetable->getId()]),
-        'csrf_protection' => false
-    ]);
-        $this->processForm($request, $form);
-
-
-        if($form->isSubmitted() && $form->isValid()) {
-            $entityManager->remove($vegetable);
-            $entityManager->flush();
-
-            return new Response(null, 204);
-        }
-
-        return new Response($form->getErrors());
+        $this->entityManager->remove($vegetable);
+        $this->entityManager->flush();
+        
+        return new Response(null, 204);
     }
 
 
