@@ -74,8 +74,9 @@ class VegetableType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
-            ['data_class' => Vegetable::class,
-            'csrf_protection' => false
+            [
+                'data_class' => Vegetable::class,
+                'csrf_protection' => false
             ]
         );
     }

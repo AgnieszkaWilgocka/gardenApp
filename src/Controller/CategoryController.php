@@ -81,15 +81,15 @@ class CategoryController extends AbstractController
         return new Response($form->getErrors());
     }
 
-    #[Route('/delete/{id}', requirements:['id' => '[1-9]\d*'], methods:'GET|DELETE')]
+    #[Route('/delete/{id}', requirements:['id' => '[1-9]\d*'], methods:'DELETE')]
     public function deleteCategory(Category $category): Response
     {
         if($this->vegetableRepository->canDelete($category)) {
+            
+            $this->entityMenager->remove($category);
+            $this->entityMenager->flush();
 
-        $this->entityMenager->remove($category);
-        $this->entityMenager->flush();
-
-        return new Response(null, 204);
+            return new Response(null, 204);
         } else {
             throw new HttpException(409, 'Category contains vegetables!');
         }

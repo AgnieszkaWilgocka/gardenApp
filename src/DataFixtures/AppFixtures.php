@@ -3,6 +3,8 @@
 namespace App\DataFixtures;
 
 use App\Factory\CategoryFactory;
+use App\Factory\GroupFactory;
+use App\Factory\SpeciesFactory;
 use App\Factory\VegetableFactory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -13,6 +15,7 @@ class AppFixtures extends Fixture
     {
         CategoryFactory::createMany(20);
         VegetableFactory::createMany(20, fn() => ['category' => CategoryFactory::random()]);
+        SpeciesFactory::createMany(20);
         // $product = new Product();
         // $manager->persist($product);
 
