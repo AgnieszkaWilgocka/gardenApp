@@ -2,6 +2,8 @@
 
 namespace App\Repository;
 
+use App\Dto\VegetableListFiltersDto;
+use App\Dto\VegetableListInputFiltersDto;
 use App\Entity\Category;
 use App\Entity\Vegetable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -11,6 +13,8 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Component\Pager\Pagination\PaginationInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -23,17 +27,37 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class VegetableRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private CategoryRepository $categoryRepository)
     {
         parent::__construct($registry, Vegetable::class);
     }
 
-    public function queryForAll() : QueryBuilder {
+    public function queryForAll(VegetableListFiltersDto $filters) : QueryBuilder {
         $qb = $this->createQueryBuilder('vegetable')
         ->orderBy('vegetable.title', 'ASC');
 
-        return $qb;
+        return $this->applyFilters($qb, $filters);
     }
+
+    public function applyFilters(QueryBuilder $queryBuilder, VegetableListFiltersDto $filters): QueryBuilder
+    {
+        if($filters->category instanceof Category) {
+            $queryBuilder->andWhere('vegetable.category = :category')
+            ->setParameter(':category', $filters->category);
+        }
+
+        return $queryBuilder;
+        // return $queryBuilder;
+    }
+
+    public function prepareFilters(VegetableListInputFiltersDto $filters): VegetableListFiltersDto
+    {
+        return new VegetableListFiltersDto(
+            null !== $filters->categoryId ? $this->categoryRepository->findOneById($filters->categoryId) : null
+        );
+    }
+    
+
 
     public function countCategory(Category $category): int
     {

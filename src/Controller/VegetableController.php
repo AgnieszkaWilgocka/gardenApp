@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Dto\VegetableListInputFiltersDto;
 use App\Entity\Vegetable;
 use App\Form\Type\VegetableType;
+use App\Repository\CategoryRepository;
 use App\Repository\VegetableRepository;
+use App\Resolver\VegetableListInputFiltersDtoResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -12,6 +15,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('api/vegetable')]
@@ -23,22 +28,23 @@ class VegetableController extends AbstractController
     }
 
 
-    #[Route('/', name:'api_vegetables')]
-    public function index(Request $request, PaginatorInterface $paginator): Response
+    #[Route('/', name:'api_vegetables', methods:'GET')]
+    public function index(#[MapQueryString(resolver: VegetableListInputFiltersDtoResolver::class)] VegetableListInputFiltersDto $filters, PaginatorInterface $paginator, #[MapQueryParameter] int $page = 1): Response
     {
-        $pagination = $paginator->paginate(
-            $this->vegetableRepository->queryForAll(),
-            $request->query->getInt('page', 1),
+        $filters = $this->vegetableRepository->prepareFilters($filters);
+        $paginationItems = $paginator->paginate(
+            $this->vegetableRepository->queryForAll($filters),
+            $page,
             5
-        );
+        )->getItems();
 
-        $json = $this->serializeVegetable(['pagination' => $pagination]);
+        $json = $this->serializeVegetable(['paginationItems' => $paginationItems]);
 
         return new Response($json, 200);
     }
 
 
-    #[Route('/post', methods:'POST')]
+    #[Route('/', methods:'POST')]
     public function create(Request $request): Response
     {
         $vegetable = new Vegetable();
@@ -51,7 +57,7 @@ class VegetableController extends AbstractController
 
             $json = $this->serializeVegetable($vegetable);
             $response = new Response($json, 201);
-            $response->headers->set('Location', $this->generateUrl('api_vegetables'));
+            // $response->headers->set('Location', $this->generateUrl('api_vegetables'));
 
             return $response;
         }
@@ -59,7 +65,7 @@ class VegetableController extends AbstractController
         return new Response($form->getErrors()); 
     }
 
-    #[Route('/put/{id}', name:'vegetable_edit', requirements:['id' => '[1-9]\d*'], methods:'PUT')]
+    #[Route('/{id}', name:'vegetable_edit', requirements:['id' => '[1-9]\d*'], methods:'PUT')]
     public function putVegetable(Request $request, Vegetable $vegetable): Response
     {
         $form = $this->createForm(VegetableType::class, $vegetable,
@@ -81,7 +87,7 @@ class VegetableController extends AbstractController
         return new Response($form->getErrors());
     }
 
-    #[Route('/delete/{id}', requirements: ["id" => '[1-9]\d*'], methods:'DELETE')]
+    #[Route('/{id}', requirements: ["id" => '[1-9]\d*'], methods:'DELETE')]
     public function deleteVegetable(Vegetable $vegetable): Response
     {
         $this->entityManager->remove($vegetable);

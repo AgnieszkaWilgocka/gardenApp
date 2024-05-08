@@ -2,10 +2,13 @@
 
 namespace App\Repository;
 
+use App\Dto\CategoryListFiltersDto;
+use App\Dto\CategoryListInputFiltersDto;
 use App\Entity\Category;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use App\Entity\Species;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Category>
@@ -17,16 +20,43 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CategoryRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private SpeciesRepository $speciesRepository)
     {
         parent::__construct($registry, Category::class);
     }
 
-    public function queryAll(): QueryBuilder
+    public function queryAll(CategoryListFiltersDto $filters): QueryBuilder
     {
-        return $this->createQueryBuilder('category')
+        $qb = $this->createQueryBuilder('category')
         ->orderBy('category.title', 'ASC');
+
+        return $this->applyFilters($qb, $filters);
     }
+
+    public function prepareFilters(CategoryListInputFiltersDto $filters): CategoryListFiltersDto
+    {
+        return new CategoryListFiltersDto(
+        null !== $filters->speciesId ? $this->speciesRepository->findOneById($filters->speciesId) : null
+        );
+    }
+
+    public function applyFilters(QueryBuilder $queryBuilder, CategoryListFiltersDto $filters): QueryBuilder
+    {
+        if($filters->species instanceof Species) {
+            $queryBuilder->andWhere('category.species = :species')
+            ->setParameter(':species', $filters->species);
+        }
+
+        return $queryBuilder;
+    }
+
+    // public function prepareFilters(VegetableListInputFiltersDto $filters): VegetableListFiltersDto
+    // {
+    //     return new VegetableListFiltersDto(
+    //         null !== $filters->categoryId ?? $this->findOneById($filters->categoryId)
+    //         // null !== $filters->categoryId ? $this->categoryService->findOneById($filters->categoryId) : null,
+    //     );
+    // }
 
     //    /**
     //     * @return Category[] Returns an array of Category objects

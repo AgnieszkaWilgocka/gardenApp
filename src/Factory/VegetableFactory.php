@@ -48,10 +48,14 @@ final class VegetableFactory extends ModelFactory
     {
         return [
             'description' => self::faker()->sentence(4, 20),
-            'harvestMonth' => self::faker()->monthName('+12 weeks'),
+            'harvestMonthStart' => self::faker()->monthName('+12 weeks'),
             'highLineSpace' => self::faker()->numberBetween(1, 5),
             'horizontalSpace' => self::faker()->numberBetween(1, 5),
-            'siewingMonth' => self::faker()->monthName('+12 weeks'),
+            'siewingMonthStart' => self::faker()->monthName('+12 weeks'),
+            'siewingMonthEnd' => self::faker()->monthName('+12 weeks'),
+            'harvestMonthEnd' => self::faker()->monthName('+12 weeks'),
+            'seedlingPlantingMonth' => self::faker()->monthName('+12 weeks'),
+            'seedlingMoveToGroundMonth' => self::faker()->monthName('+12 weeks'),
             'title' => self::faker()->word(),
         ];
     }

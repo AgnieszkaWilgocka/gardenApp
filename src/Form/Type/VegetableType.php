@@ -46,14 +46,14 @@ class VegetableType extends AbstractType
             ]
             );
         $builder->add(
-            'siewingMonth',
+            'siewingMonthStart',
             MonthChoiceType::class, [
                 'required' => true,
             ]
         );
 
         $builder->add(
-            'harvestMonth',
+            'harvestMonthStart',
             MonthChoiceType::class, [
                 'required' => true,
             ]
@@ -69,6 +69,34 @@ class VegetableType extends AbstractType
                 // 'placeholder' => 'choose_category'
             ]
             );
+        $builder->add(
+            'siewingMonthEnd',
+            MonthChoiceType::class,
+            [
+                'required' => true
+            ]
+        );
+        $builder->add(
+            'harvestMonthEnd',
+            MonthChoiceType::class,
+            [
+                'required' => true,
+            ]
+        );
+        $builder->add(
+            'seedlingPlantingMonth',
+            MonthChoiceType::class,
+            [
+                'required' => true
+            ]
+        );
+        $builder->add(
+            'seedlingMoveToGroundMonth',
+            MonthChoiceType::class,
+            [
+                'required' => true
+            ]
+        );
     }
 
     public function configureOptions(OptionsResolver $resolver)

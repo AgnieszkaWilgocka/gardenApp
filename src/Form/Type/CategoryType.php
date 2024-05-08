@@ -3,6 +3,7 @@
 namespace App\Form\Type;
 
 use App\Entity\Category;
+use App\Entity\Species;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -20,6 +21,14 @@ class CategoryType extends AbstractType
                 'label' => 'category_title',
                 'required' => true,
                 'attr' => ['max_length' => 64]
+            ]
+            );
+        $builder->add(
+            'species',
+            EntityType::class,
+            [
+                'class' => Species::class,
+                'required' => true
             ]
             );
     }

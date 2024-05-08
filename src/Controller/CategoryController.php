@@ -6,15 +6,19 @@ use App\Entity\Category;
 use App\Form\Type\CategoryType;
 use App\Repository\CategoryRepository;
 use App\Repository\VegetableRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
-use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Dto\CategoryListInputFiltersDto;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Resolver\CategoryListInputFiltersDtoResolver;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 
 #[Route('api/category')]
 class CategoryController extends AbstractController
@@ -22,20 +26,22 @@ class CategoryController extends AbstractController
     public function __construct(private CategoryRepository $categoryRepository, private VegetableRepository $vegetableRepository, private EntityManagerInterface $entityMenager, private PaginatorInterface $paginator, private SerializerInterface $serializer)
     {}
 
-    #[Route('/', name:'app_index_category', methods:'GET|POST')]
-    public function index(Request $request): Response
+    #[Route('/', name:'app_index_category', methods:'GET')]
+    public function index(#[MapQueryString(resolver: CategoryListInputFiltersDtoResolver::class)] CategoryListInputFiltersDto $filters, #[MapQueryParameter] $page = 1): Response
     {
-        $pagination = $this->paginator->paginate(
-            $this->categoryRepository->queryAll(),
-            $request->query->get('page', 1),
+        $filters = $this->categoryRepository->prepareFilters($filters);
+
+        $paginationItems = $this->paginator->paginate(
+            $this->categoryRepository->queryAll($filters),
+            $page,
             5
-        );
-        $json = $this->serializeCategory(['pagination' => $pagination]);
+        )->getItems();
+        $json = $this->serializeCategory(['paginationItems' => $paginationItems]);
 
         return new Response($json, 200);
     }
 
-    #[Route('/post', methods:'POST')]
+    #[Route('/', methods:'POST')]
     public function postCategory(Request $request): Response
     {
         $category = new Category();
@@ -48,17 +54,13 @@ class CategoryController extends AbstractController
             $this->entityMenager->flush();
 
             $json = $this->serializeCategory($category);
-            $response = new Response($json, 201);
-            $response->headers->set('Location', $this->generateUrl('app_index_category'));
-
-            return $response;
+            return new Response($json, 201);
         }
 
         return new Response($form->getErrors());
     }
 
-    // #[Route('/api/category/put/{id}', name:'put_category', requirements:['id' => '[1-9]\*d'], methods:'PUT')]
-    #[Route('/put/{id}', name:'category_put', requirements:['id' => '[1-9]\d*'], methods:'PUT')]
+    #[Route('/{id}', name:'category_put', requirements:['id' => '[1-9]\d*'], methods:'PUT')]
     public function putCategory(Request $request, Category $category): Response
     {
         $form = $this->createForm(CategoryType::class, $category,
@@ -81,7 +83,7 @@ class CategoryController extends AbstractController
         return new Response($form->getErrors());
     }
 
-    #[Route('/delete/{id}', requirements:['id' => '[1-9]\d*'], methods:'DELETE')]
+    #[Route('/{id}', requirements:['id' => '[1-9]\d*'], methods:'DELETE')]
     public function deleteCategory(Category $category): Response
     {
         if($this->vegetableRepository->canDelete($category)) {

@@ -26,13 +26,25 @@ class Vegetable
     private ?int $highLineSpace = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $siewingMonth = null;
+    private ?string $siewingMonthStart = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $harvestMonth = null;
+    private ?string $harvestMonthStart = null;
 
     #[ORM\ManyToOne(inversedBy: 'vegetables')]
     private ?Category $category = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $siewingMonthEnd = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $harvestMonthEnd = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $seedlingPlantingMonth = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $seedlingMoveToGroundMonth = null;
 
     public function getId(): ?int
     {
@@ -79,24 +91,24 @@ class Vegetable
         $this->highLineSpace = $highLineSpace;
     }
 
-    public function getSiewingMonth(): ?string
+    public function getSiewingMonthStart(): ?string
     {
-        return $this->siewingMonth;
+        return $this->siewingMonthStart;
     }
 
-    public function setSiewingMonth(string $siewingMonth): void
+    public function setSiewingMonthStart(string $siewingMonth): void
     {
-        $this->siewingMonth = $siewingMonth;
+        $this->siewingMonthStart = $siewingMonth;
     }
 
-    public function getHarvestMonth(): ?string
+    public function getHarvestMonthStart(): ?string
     {
-        return $this->harvestMonth;
+        return $this->harvestMonthStart;
     }
 
-    public function setHarvestMonth(string $harvestMonth): void
+    public function setHarvestMonthStart(string $harvestMonth): void
     {
-        $this->harvestMonth = $harvestMonth;
+        $this->harvestMonthStart = $harvestMonth;
     }
 
     public function getCategory(): ?Category
@@ -107,5 +119,45 @@ class Vegetable
     public function setCategory(?Category $category): void
     {
         $this->category = $category;
+    }
+
+    public function getSiewingMonthEnd(): ?string
+    {
+        return $this->siewingMonthEnd;
+    }
+
+    public function setSiewingMonthEnd(string $siewingMonthEnd): void
+    {
+        $this->siewingMonthEnd = $siewingMonthEnd;
+    }
+
+    public function getHarvestMonthEnd(): ?string
+    {
+        return $this->harvestMonthEnd;
+    }
+
+    public function setHarvestMonthEnd(string $harvestMonthEnd): void
+    {
+        $this->harvestMonthEnd = $harvestMonthEnd;
+    }
+
+    public function getSeedlingPlantingMonth(): ?string
+    {
+        return $this->seedlingPlantingMonth;
+    }
+
+    public function setSeedlingPlantingMonth(string $seedlingPlantingMonth): void
+    {
+        $this->seedlingPlantingMonth = $seedlingPlantingMonth;
+    }
+
+    public function getSeedlingMoveToGroundMonth(): ?string
+    {
+        return $this->seedlingMoveToGroundMonth;
+    }
+
+    public function setSeedlingMoveToGroundMonth(string $SeedlingMoveToGroundMonth): void
+    {
+        $this->seedlingMoveToGroundMonth = $SeedlingMoveToGroundMonth;
     }
 }

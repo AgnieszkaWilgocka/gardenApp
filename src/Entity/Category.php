@@ -18,13 +18,18 @@ class Category
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\OneToMany(targetEntity: Vegetable::class, mappedBy: 'category')]
-    private Collection $vegetables;
+    //USUNAC DWUSTRONNĄ
 
-    public function __construct()
-    {
-        $this->vegetables = new ArrayCollection();
-    }
+    // #[ORM\OneToMany(targetEntity: Vegetable::class, mappedBy: 'category')]
+    // private Collection $vegetables;
+
+    #[ORM\ManyToOne]
+    private ?Species $species = null;
+
+    // public function __construct()
+    // {
+    //     $this->vegetables = new ArrayCollection();
+    // }
 
     public function getId(): ?int
     {
@@ -41,33 +46,43 @@ class Category
         $this->title = $title;
     }
 
-    /**
-     * @return Collection<int, Vegetable>
-     */
-    public function getVegetables(): Collection
+    // /**
+    //  * @return Collection<int, Vegetable>
+    //  */
+    // public function getVegetables(): Collection
+    // {
+    //     return $this->vegetables;
+    // }
+
+    // public function addVegetable(Vegetable $vegetable): static
+    // {
+    //     if (!$this->vegetables->contains($vegetable)) {
+    //         $this->vegetables->add($vegetable);
+    //         $vegetable->setCategory($this);
+    //     }
+
+    //     return $this;
+    // }
+
+    // public function removeVegetable(Vegetable $vegetable): static
+    // {
+    //     if ($this->vegetables->removeElement($vegetable)) {
+    //         // set the owning side to null (unless already changed)
+    //         if ($vegetable->getCategory() === $this) {
+    //             $vegetable->setCategory(null);
+    //         }
+    //     }
+
+    //     return $this;
+    // }
+
+    public function getSpecies(): ?Species
     {
-        return $this->vegetables;
+        return $this->species;
     }
 
-    public function addVegetable(Vegetable $vegetable): static
+    public function setSpecies(?Species $species): void
     {
-        if (!$this->vegetables->contains($vegetable)) {
-            $this->vegetables->add($vegetable);
-            $vegetable->setCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeVegetable(Vegetable $vegetable): static
-    {
-        if ($this->vegetables->removeElement($vegetable)) {
-            // set the owning side to null (unless already changed)
-            if ($vegetable->getCategory() === $this) {
-                $vegetable->setCategory(null);
-            }
-        }
-
-        return $this;
+        $this->species = $species;
     }
 }
